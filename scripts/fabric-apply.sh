@@ -15,7 +15,13 @@ test -f "$CONFIG" || { echo "config not found: $CONFIG" >&2; exit 1; }
 source "$CONFIG"
 NETPLAN_FILE=${NETPLAN_FILE:-/etc/netplan/90-switchless-fabric.yaml}
 
-for command in awk install ip netplan python3 readlink show_gids; do
+for name in \
+  FABRIC0_IF FABRIC0_MAC FABRIC0_ADDRESS \
+  FABRIC1_IF FABRIC1_MAC FABRIC1_ADDRESS; do
+  test -n "${!name:-}" || { echo "missing $name" >&2; exit 1; }
+done
+
+for command in awk install ip netplan python3 readlink seq show_gids; do
   command -v "$command" >/dev/null || {
     echo "missing required command: $command" >&2
     exit 1

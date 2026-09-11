@@ -82,6 +82,11 @@ The verifier reads `/proc/PID/maps`, resolves symlinks, and requires exactly
 one NCCL library identity. It rejects both a missing library and the common
 failure where the patched file and a wheel-bundled file are mapped together.
 
+The launch wrapper also fails before `exec` unless the versioned library is
+pinned by the release bundle's `SHA256SUMS`. A direct local build can provide
+the expected digest explicitly as `SWITCHLESS_NCCL_SHA256`; a bare path is not
+treated as an identity.
+
 The final live gate must also observe the two
 `NCCL_SWITCHLESS_RING_ONLY` diagnostics with `NCCL_DEBUG=INFO`, confirm Ring
 selection, and complete a real multi-rank collective. Binary inspection in CI

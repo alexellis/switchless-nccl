@@ -14,6 +14,32 @@ test -f "$LIBRARY" || {
   exit 1
 }
 LIBRARY=$(readlink -f "$LIBRARY")
+LIBRARY_DIR=$(dirname "$LIBRARY")
+LIBRARY_NAME=$(basename "$LIBRARY")
+
+if [ -f "$LIBRARY_DIR/SHA256SUMS" ]; then
+  awk -v name="$LIBRARY_NAME" '$2 == name { found = 1 } END { exit !found }' \
+    "$LIBRARY_DIR/SHA256SUMS" || {
+      echo "SHA256SUMS does not pin $LIBRARY_NAME" >&2
+      exit 1
+    }
+  (
+    cd "$LIBRARY_DIR"
+    sha256sum --check --status --ignore-missing SHA256SUMS
+  ) || {
+    echo "release bundle checksum verification failed" >&2
+    exit 1
+  }
+elif [ -n "${SWITCHLESS_NCCL_SHA256:-}" ]; then
+  echo "$SWITCHLESS_NCCL_SHA256  $LIBRARY" |
+    sha256sum --check --status - || {
+      echo "SWITCHLESS_NCCL_SHA256 does not match $LIBRARY" >&2
+      exit 1
+    }
+else
+  echo "no library identity: provide the bundle SHA256SUMS or SWITCHLESS_NCCL_SHA256" >&2
+  exit 1
+fi
 
 case "${VLLM_NCCL_SO_PATH:-}" in
   "" | "$LIBRARY") ;;

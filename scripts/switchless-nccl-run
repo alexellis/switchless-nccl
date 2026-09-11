@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# Give every descendant process one unambiguous NCCL library selection.
+set -euo pipefail
+
+LIBRARY=${1:-}
+if [ -z "$LIBRARY" ] || [ "${2:-}" != "--" ] || [ "$#" -lt 3 ]; then
+  echo "usage: switchless-nccl-run LIBRARY -- COMMAND [ARG ...]" >&2
+  exit 2
+fi
+shift 2
+
+test -f "$LIBRARY" || {
+  echo "NCCL library not found: $LIBRARY" >&2
+  exit 1
+}
+LIBRARY=$(readlink -f "$LIBRARY")
+
+case "${VLLM_NCCL_SO_PATH:-}" in
+  "" | "$LIBRARY") ;;
+  *)
+    echo "VLLM_NCCL_SO_PATH already selects another library" >&2
+    exit 1
+    ;;
+esac
+
+case ":${LD_PRELOAD:-}:" in
+  *libnccl.so*)
+    case ":${LD_PRELOAD:-}:" in
+      *":$LIBRARY:"*) ;;
+      *)
+        echo "LD_PRELOAD already contains another NCCL library" >&2
+        exit 1
+        ;;
+    esac
+    ;;
+  *)
+    if [ -n "${LD_PRELOAD:-}" ]; then
+      LD_PRELOAD="$LIBRARY:$LD_PRELOAD"
+    else
+      LD_PRELOAD=$LIBRARY
+    fi
+    ;;
+esac
+
+case "${NCCL_ALGO:-Ring}" in
+  Ring) ;;
+  *) echo "switchless cycle requires NCCL_ALGO=Ring" >&2; exit 1 ;;
+esac
+
+export LD_PRELOAD
+export VLLM_NCCL_SO_PATH=$LIBRARY
+export TORCH_USE_RTLD_GLOBAL=1
+export NCCL_SWITCHLESS_RING_ONLY=1
+export NCCL_ALGO=Ring
+
+exec "$@"

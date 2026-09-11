@@ -1,0 +1,27 @@
+x-switchless-nccl: &switchless-nccl
+  LD_PRELOAD: /opt/switchless-nccl/libnccl.so.2
+  VLLM_NCCL_SO_PATH: /opt/switchless-nccl/libnccl.so.2
+  TORCH_USE_RTLD_GLOBAL: "1"
+  NCCL_SWITCHLESS_RING_ONLY: "1"
+  NCCL_ALGO: Ring
+  NCCL_NET: IB
+  NCCL_IB_DISABLE: "0"
+  NCCL_IB_SUBNET_AWARE_ROUTING: "1"
+  NCCL_IB_SUBNET_PREFIX_LEN: "24"
+  NCCL_IB_MERGE_NICS: "0"
+  NCCL_CROSS_NIC: "1"
+
+services:
+  rank:
+    image: your-vllm-image@sha256:replace-with-an-immutable-digest
+    network_mode: host
+    ipc: host
+    environment:
+      <<: *switchless-nccl
+      NCCL_IB_HCA: replace-with-two-roce-devices
+      NCCL_IB_ADDR_FAMILY: AF_INET
+      NCCL_IB_ROCE_VERSION_NUM: "2"
+      NCCL_SOCKET_IFNAME: replace-with-management-interface
+      GLOO_SOCKET_IFNAME: replace-with-management-interface
+    volumes:
+      - ./nccl-switchless:/opt/switchless-nccl:ro

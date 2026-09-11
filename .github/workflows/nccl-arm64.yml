@@ -1,0 +1,55 @@
+name: NCCL ARM64 source build
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - patches/**
+      - scripts/build-nccl.sh
+      - scripts/package-nccl.sh
+      - scripts/verify-nccl.sh
+      - scripts/versions.sh
+      - PROVENANCE.md
+      - LICENSE
+      - NOTICE
+      - THIRD_PARTY_NOTICES.md
+      - .github/workflows/nccl-arm64.yml
+      - .github/workflows/publish.yml
+  pull_request:
+    paths:
+      - patches/**
+      - scripts/build-nccl.sh
+      - scripts/package-nccl.sh
+      - scripts/verify-nccl.sh
+      - scripts/versions.sh
+      - PROVENANCE.md
+      - LICENSE
+      - NOTICE
+      - THIRD_PARTY_NOTICES.md
+      - .github/workflows/nccl-arm64.yml
+      - .github/workflows/publish.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: actuated-arm64-8cpu-12gb
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+      - name: Restore the exact compiled library
+        id: nccl-cache
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/nccl-patched
+          key: nccl-switchless-sm121-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('scripts/versions.sh', 'scripts/build-nccl.sh', 'patches/*.patch') }}
+      - name: Build NCCL from pinned source
+        if: steps.nccl-cache.outputs.cache-hit != 'true'
+        run: ./scripts/build-nccl.sh "$RUNNER_TEMP/nccl-patched"
+      - name: Verify the compiled library
+        run: ./scripts/verify-nccl.sh "$RUNNER_TEMP/nccl-patched"
+      - name: Build the release bundle
+        run: ./scripts/package-nccl.sh "$RUNNER_TEMP/nccl-patched" "$RUNNER_TEMP/release"

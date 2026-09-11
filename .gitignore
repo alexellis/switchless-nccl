@@ -2,4 +2,4 @@ bin/
 nccl-patched/
 *.tar.gz
 *.tar.gz.sha256
-fabric.env
+/fabric.env

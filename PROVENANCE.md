@@ -9,21 +9,30 @@
 - licence: Apache-2.0 and BSD-3-Clause; retain NVIDIA's `LICENSE.txt` and
   `ThirdPartyNotices.txt` when distributing a binary
 
-## Switchless-cycle patch
+## Legacy two-patch source
 
-- file: `patches/nccl-2.30.7-switchless-cycle.patch`
-- SHA-256: `6709063fa1c25055ae77a9397dea5d89643f8211d25e7990bdd11597d08c0dde`
-- patched Git tree: `abdeb053b94c3f6d472cd55ae2b79ca821299009`
+- files:
+  - `patches/nccl-2.30.7-skip-tree-pat.patch`
+  - `patches/nccl-2.30.7-advertise-all-listener-gids.patch`
+- SHA-256:
+  - `097656d07a5774919f0d51558b51ec05de8168c0097ed6cb7764c33230ba6eb2`
+  - `dccfce86d14c15c39f0e0a742863960205a3d9823c464b31a7f7389354844178`
+- patched Git tree: `9e80bc2489864b4e6c6e2184af8797b07baa68f1`
 - source repository: `https://github.com/FujitsuPolycom/sparkring`
-- source commit: `a6f12fda47ebf4b0bba4c63e3facba801e7fd0b1`
-- ownership: original SparkRing implementation, Apache-2.0
+- first source commit: `b9b2225363c45ea76139493153c7756769ae5de5`
+- ownership: SparkRing, Apache-2.0
 
-The patch:
+The patches:
 
-1. adds the opt-in `NCCL_SWITCHLESS_RING_ONLY` parameter;
-2. bypasses Tree and PAT transport setup when the parameter is enabled; and
-3. advertises the eligible listener GIDs from both selected RoCE devices so
+1. bypass Tree and PAT transport setup when `NCCL_SKIP_TREE_CONNECT` exists;
+   and
+2. advertise the eligible listener GIDs from both selected RoCE devices so
    subnet-aware selection can choose the physical cable shared with a peer.
+
+They are byte-for-byte identical to the two files retained in
+`/home/alex/nccl-build` on the qualified four-Spark deployment. Its live
+`libnccl.so.2.30.7` has SHA-256
+`ccd57342449c3f680befcb379329b935746e5299dc4de5f2516146e0411bd85f`.
 
 The listener change extends NVIDIA's DGX Spark subnet-aware routing work in
 commit `5c1c4288e6627e9b442eda997aa6ee9136cda0bd`, authored by Zifu Yang and
@@ -37,11 +46,9 @@ Joseph Rose published the skip-Tree/skip-PAT approach in
 `27ca6d3bdc43d6c2978fc34b920cdc8a218a333a`, authored by Joseph Rose on
 4 July 2026. The repository declares no licence.
 
-No source from that repository is included here. The conceptual prior art is
-credited because earlier SparkRing compatibility patches used a small guard
-with the same purpose. Those compatibility patches are deliberately absent
-from this repository; only the separately written SparkRing patch above is a
-build input.
+No source from Joseph Rose's repository is included here. The conceptual prior
+art is credited. The build inputs are the separately published SparkRing files
+identified and licensed above.
 
 ## Build target
 

@@ -39,8 +39,10 @@ install -m 0644 "$ROOT/LICENSE" "$STAGING/LICENSE.project.txt"
 install -m 0644 "$ROOT/NOTICE" "$STAGING/NOTICE"
 install -m 0644 "$ROOT/THIRD_PARTY_NOTICES.md" \
   "$STAGING/THIRD_PARTY_NOTICES.md"
-install -m 0644 "$ROOT/patches/nccl-2.30.7-switchless-cycle.patch" \
-  "$STAGING/nccl-2.30.7-switchless-cycle.patch"
+install -m 0644 "$ROOT/patches/nccl-2.30.7-skip-tree-pat.patch" \
+  "$STAGING/nccl-2.30.7-skip-tree-pat.patch"
+install -m 0644 "$ROOT/patches/nccl-2.30.7-advertise-all-listener-gids.patch" \
+  "$STAGING/nccl-2.30.7-advertise-all-listener-gids.patch"
 
 curl -fsSL \
   "https://raw.githubusercontent.com/NVIDIA/nccl/$NCCL_COMMIT/LICENSE.txt" \
@@ -60,7 +62,8 @@ echo "$NCCL_NOTICES_SHA256  $STAGING/ThirdPartyNotices.NCCL.txt" |
     "libnccl.so.$NCCL_VERSION" \
     LICENSE.NCCL.txt \
     ThirdPartyNotices.NCCL.txt \
-    nccl-2.30.7-switchless-cycle.patch > SHA256SUMS
+    nccl-2.30.7-skip-tree-pat.patch \
+    nccl-2.30.7-advertise-all-listener-gids.patch > SHA256SUMS
 )
 
 SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH:-$(git -C "$ROOT" log -1 --format=%ct)}

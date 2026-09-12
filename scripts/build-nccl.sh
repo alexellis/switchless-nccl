@@ -7,7 +7,10 @@ ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 source "$ROOT/scripts/versions.sh"
 
 OUTPUT_DIR=${1:-$PWD/nccl-patched}
-PATCH="$ROOT/patches/nccl-2.30.7-switchless-cycle.patch"
+PATCHES=(
+  "$ROOT/patches/nccl-2.30.7-skip-tree-pat.patch"
+  "$ROOT/patches/nccl-2.30.7-advertise-all-listener-gids.patch"
+)
 
 case "$(uname -m)" in
   aarch64 | arm64) ;;
@@ -25,10 +28,8 @@ for command in docker file git install ln nproc readlink sha256sum strings; do
   }
 done
 
-echo "$NCCL_PATCH_SHA256  $PATCH" | sha256sum --check --status - || {
-  echo "patch hash does not match scripts/versions.sh" >&2
-  exit 1
-}
+echo "$NCCL_SKIP_PATCH_SHA256  ${PATCHES[0]}" | sha256sum --check --status -
+echo "$NCCL_GID_PATCH_SHA256  ${PATCHES[1]}" | sha256sum --check --status -
 
 BUILD_DIR=$(mktemp -d)
 cleanup() {
@@ -47,8 +48,10 @@ test "$(git -C "$BUILD_DIR/nccl" write-tree)" = "$NCCL_BASE_TREE" || {
   echo "NCCL base tree does not match the provenance pin" >&2
   exit 1
 }
-git -C "$BUILD_DIR/nccl" apply --check "$PATCH"
-git -C "$BUILD_DIR/nccl" apply --index "$PATCH"
+for patch in "${PATCHES[@]}"; do
+  git -C "$BUILD_DIR/nccl" apply --check "$patch"
+  git -C "$BUILD_DIR/nccl" apply --index "$patch"
+done
 test "$(git -C "$BUILD_DIR/nccl" write-tree)" = "$NCCL_PATCHED_TREE" || {
   echo "patched NCCL tree does not match the provenance pin" >&2
   exit 1

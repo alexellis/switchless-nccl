@@ -13,9 +13,8 @@ not vendored in this Git repository. A release bundle includes the upstream
 
 ## SparkRing
 
-The lines added by `patches/nccl-2.30.7-switchless-cycle.patch` were first
-published by the SparkRing project under Apache-2.0 at the revision recorded
-in `PROVENANCE.md`.
+The lines added by the two patch files under `patches/` were first published by
+SparkRing under Apache-2.0 at the revision recorded in `PROVENANCE.md`.
 
 ## Joseph Rose's prior work
 

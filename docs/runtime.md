@@ -22,6 +22,7 @@ Mount the complete verified bundle read-only at one canonical path, for example
 LD_PRELOAD=/opt/switchless-nccl/libnccl.so.2
 VLLM_NCCL_SO_PATH=/opt/switchless-nccl/libnccl.so.2
 TORCH_USE_RTLD_GLOBAL=1
+NCCL_SKIP_TREE_CONNECT=1
 NCCL_SWITCHLESS_RING_ONLY=1
 NCCL_ALGO=Ring
 NCCL_NET=IB
@@ -58,7 +59,7 @@ Older, already qualified launchers may pin the common index reported by
 `fabric-apply.sh` during migration. Do not combine a hard-coded index with a
 host whose two ports report different indices.
 
-Do not enable `NCCL_SWITCHLESS_RING_ONLY` on a two-rank pair. Both ranks are
+Do not enable `NCCL_SKIP_TREE_CONNECT` on a two-rank pair. Both ranks are
 directly connected, so stock Tree setup is valid. Do not enable it on a
 switched fabric either.
 
@@ -87,7 +88,7 @@ pinned by the release bundle's `SHA256SUMS`. A direct local build can provide
 the expected digest explicitly as `SWITCHLESS_NCCL_SHA256`; a bare path is not
 treated as an identity.
 
-The final live gate must also observe the two
-`NCCL_SWITCHLESS_RING_ONLY` diagnostics with `NCCL_DEBUG=INFO`, confirm Ring
+The final live gate must also observe both `SWITCHLESS: skipping` diagnostics
+with `NCCL_DEBUG=INFO`, confirm Ring
 selection, and complete a real multi-rank collective. Binary inspection in CI
 cannot qualify the physical fabric.

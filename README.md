@@ -4,9 +4,10 @@ Build, install, and verify a source-pinned NCCL library for a direct-cable
 RoCE cycle of NVIDIA DGX Spark systems.
 
 Stock NCCL attempts Tree and PAT transport connections between ranks that are
-not directly cabled in a four-node switchless cycle. This repository carries a
-small, independently implemented patch which can make that topology explicitly
-ring-only and advertise both neighbour-facing RoCE GIDs to the connecting peer.
+not directly cabled in a four-node switchless cycle. This branch preserves the
+exact two SparkRing patch files used to build Alex Ellis's known-working
+four-Spark library. It skips Tree and PAT transport setup and advertises both
+neighbour-facing RoCE GIDs to the connecting peer.
 
 It also packages the two operational details which are easy to miss:
 
@@ -20,13 +21,13 @@ forced to Ring. Use stock NCCL for a switched fabric or a two-node direct pair.
 
 ## Quick start
 
-After the first standalone build is qualified and released, download its bundle
+After this legacy build is qualified and released, download its bundle
 on every Spark, verify its checksum, and extract it to the same host path:
 
 ```bash
-tar -xzf nccl-2.30.7-switchless-cycle-sm121-linux-arm64.tar.gz
+tar -xzf nccl-2.30.7-switchless-legacy-sm121-linux-arm64.tar.gz
 install -d "$HOME/nccl-switchless"
-cp -a nccl-2.30.7-switchless-cycle-sm121-linux-arm64/. \
+cp -a nccl-2.30.7-switchless-legacy-sm121-linux-arm64/. \
   "$HOME/nccl-switchless/"
 (cd "$HOME/nccl-switchless" && sha256sum --check SHA256SUMS)
 ```
@@ -45,7 +46,7 @@ The example Compose fragment is in [`examples/compose.yaml`](examples/compose.ya
 The library remains inert unless the deployment also sets:
 
 ```text
-NCCL_SWITCHLESS_RING_ONLY=1
+NCCL_SKIP_TREE_CONNECT=1
 NCCL_ALGO=Ring
 NCCL_IB_SUBNET_AWARE_ROUTING=1
 NCCL_IB_MERGE_NICS=0
@@ -85,10 +86,9 @@ Joseph Rose first published the skip-Tree/skip-PAT switchless approach in
 [`josephdrose/nccl-spark-switchless`](https://github.com/josephdrose/nccl-spark-switchless).
 That repository has no declared licence, so no source from it is included here.
 
-The patch in this repository is the separately written SparkRing implementation,
-originally published under Apache-2.0. It uses NCCL's parameter mechanism,
-different names and diagnostics, and adds the listener-GID change needed by the
-four-node cycle. Exact source commits, trees, and hashes are in
+Both patch files on this branch were published by SparkRing under Apache-2.0.
+They are byte-for-byte identical to the build inputs retained on the live
+four-Spark deployment. Exact source commits, trees, and hashes are in
 [`PROVENANCE.md`](PROVENANCE.md).
 
 ## Consumers
@@ -103,17 +103,14 @@ loading contract, fabric bootstrap, and transport-level verification.
 
 ## Status
 
-The imported patch is the clean successor to two older build variants. It has
-not yet replaced the library in Alex Ellis's GLM-5.3 Flash TP4 deployment. See
-[`docs/variants.md`](docs/variants.md) before migrating. CI proves source,
-patch, architecture, and binary shape. A CI build does not prove the live RoCE
-topology; run the fabric checks and a real NCCL collective on the target
-four-node cycle before serving.
+This branch is the exact-source legacy baseline. The retained live binary is
+SHA-256 `ccd57342449c3f680befcb379329b935746e5299dc4de5f2516146e0411bd85f`.
+CI proves source, patch, architecture, and binary shape; the live RoCE cycle and
+model gate still have to qualify any rebuilt binary.
 
-The audited patch-improvement plan is in
-[`docs/patch-roadmap.md`](docs/patch-roadmap.md). Those changes deliberately do
-not alter the first extracted patch before it can be compared with the known
-working legacy build.
+The audited improvement plan is in
+[`docs/patch-roadmap.md`](docs/patch-roadmap.md). Those changes belong on the
+separate hardened branch so this baseline remains byte-exact.
 
 Licensed under Apache-2.0. See [`NOTICE`](NOTICE) and
 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).

@@ -26,11 +26,11 @@ change used by the live build. That release remains available for
 reproducibility but should not be described as byte- or patch-equivalent to the
 live four-Spark library.
 
-## Standalone clean build
+## Standalone combined build (`master`)
 
-This repository applies the independently implemented combined patch recorded
-in `PROVENANCE.md`. It provides the same intended ring-only and listener-GID
-behaviour as the live two-patch build, but its opt-in variable is:
+The repository's `master` branch applies SparkRing's later combined patch. It
+provides the same intended ring-only and listener-GID behaviour as the live
+two-patch build, but its opt-in variable is:
 
 ```text
 NCCL_SWITCHLESS_RING_ONLY=1
@@ -52,6 +52,6 @@ identity and mapping on every rank, preserve the physical rank order, and run
 the complete four-rank collective and serving gate. Only then update deployment
 pins and remove the legacy variable.
 
-Do not add an alias for `NCCL_SKIP_TREE_CONNECT` to the clean patch. Keeping the
-independent parameter implementation avoids copying the unlicensed prior guard
-and makes the provenance boundary auditable.
+Do not conflate either SparkRing implementation with Joseph Rose's unlicensed
+source. The shared concept is credited, but both buildable source variants in
+this repository come from the separately licensed SparkRing history.

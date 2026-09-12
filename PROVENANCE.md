@@ -81,6 +81,11 @@ identified and licensed above.
   `scripts/versions.sh`
 - GPU code generation: `sm_121` (DGX Spark GB10)
 - output SONAME/version: `libnccl.so.2.30.7`
+- canonical release: `v0.0.1`
+- release archive SHA-256:
+  `b4a686382a92e57b485ca1bf7cd0f9fde780a68f01ea902ac432b60505b2041f`
+- release library SHA-256:
+  `78cb83871792ec57d763d142e4cae26fc754ae284bcc81dcb2a7d50e17d4fa57`
 
 `scripts/build-nccl.sh` verifies the source tree, patch hash, patched tree, and
 container image pin before compiling. `scripts/package-nccl.sh` bundles this

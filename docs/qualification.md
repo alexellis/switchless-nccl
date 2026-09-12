@@ -95,3 +95,35 @@ The retired standalone combined patch remains in the immutable qualification
 receipt only. It does not offer a measured performance advantage large enough
 to outweigh the canonical implementation's compatibility and fail-closed
 checks.
+
+## Published release regression
+
+The exact `v0.0.1` release asset was then downloaded and independently
+verified on each of the four Sparks. Every live rank mapped
+`libnccl.so.2.30.7` with SHA-256
+`78cb83871792ec57d763d142e4cae26fc754ae284bcc81dcb2a7d50e17d4fa57`.
+The archive SHA-256 is
+`b4a686382a92e57b485ca1bf7cd0f9fde780a68f01ea902ac432b60505b2041f`.
+
+The same pinned RigMark revision and protocol then compared the released
+binary with the canonical hardened qualification arm above:
+
+| Metric | Qualification arm | Released `v0.0.1` | Change |
+|---|---:|---:|---:|
+| Code decode | 71.0 tok/s | 71.3 tok/s | +0.4% |
+| Prose decode | 30.6 tok/s | 31.2 tok/s | +2.0% |
+| Structured ceiling | 109.3 tok/s | 109.2 tok/s | -0.1% |
+| 64k cold prefill | 1,976.1 tok/s | 1,964.7 tok/s | -0.6% |
+| 64k cached replay | 36,333.5 tok/s | 36,074.9 tok/s | -0.7% |
+| C4 short-code load | 100.0 tok/s | 110.8 tok/s | +10.8% |
+
+Both runs passed 15/15 output gates. The C4 three-round ranges overlap widely:
+70.246–116.629 tok/s for the qualification arm and 67.735–113.963 tok/s for
+the release. The concurrency medians are therefore treated as scheduler and
+sampling noise, not a release effect. Single-stream decode and 64k prefill
+demonstrate parity, with no evidence of a regression.
+
+The complete sanitised receipt is published in the
+[`GLM TP4 recipe`](https://github.com/alexellis/glm-5.3-flash-4x-dgx-spark-switchless/blob/master/data/rigmark/glm53-nccl-v0.0.1-tp4-20260912.json).
+Its SHA-256 is
+`7f9c9cc1f617f5e183950127f1e3b716edec4dc23c731876366fde64dea89b46`.

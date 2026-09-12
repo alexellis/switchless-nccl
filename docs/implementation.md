@@ -4,6 +4,13 @@ The repository publishes one implementation from `master`: NCCL 2.30.7 with
 the two proven Apache-2.0 switchless source patches and the separately marked
 OpenFaaS Ltd hardening patch.
 
+The canonical binary is release
+[`v0.0.1`](https://github.com/alexellis/switchless-nccl/releases/tag/v0.0.1).
+Consumers pin its archive SHA-256
+`b4a686382a92e57b485ca1bf7cd0f9fde780a68f01ea902ac432b60505b2041f`
+and library SHA-256
+`78cb83871792ec57d763d142e4cae26fc754ae284bcc81dcb2a7d50e17d4fa57`.
+
 The runtime must opt in explicitly:
 
 ```text
@@ -27,8 +34,10 @@ The implementation:
 - emits identifiable `SWITCHLESS/HARDENED` diagnostics; and
 - leaves the steady-state NCCL Ring collective path unchanged.
 
-It passed the physical four-rank collective gate and the complete
-GLM-5.3-Flash TP4 + DFlash2 serving qualification. See
+It passed the physical four-rank collective gate, the complete
+GLM-5.3-Flash TP4 + DFlash2 serving qualification, and a second full RigMark
+regression after the public release asset was installed and mapped into all
+four live ranks. See
 [`qualification.md`](qualification.md) for the results and
 [`runtime.md`](runtime.md) for the mandatory loading contract.
 

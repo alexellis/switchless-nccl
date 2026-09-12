@@ -99,12 +99,21 @@ loading contract, fabric bootstrap, and transport-level verification.
 
 ## Status
 
-The implementation on `master` passed the four-rank value-checked collective
-gate and a matched full-model A/B against the retired standalone combined
-candidate. Both RigMark arms passed 15/15 outputs and were a practical
-performance tie. This hardened implementation is the sole recommended
-four-node build because its compatibility and fail-closed configuration checks
-have no material measured cost. See
+Release [`v0.0.1`](https://github.com/alexellis/switchless-nccl/releases/tag/v0.0.1)
+is the canonical ARM64 build from `master`. Its release identities are:
+
+- archive SHA-256:
+  `b4a686382a92e57b485ca1bf7cd0f9fde780a68f01ea902ac432b60505b2041f`;
+- `libnccl.so.2.30.7` SHA-256:
+  `78cb83871792ec57d763d142e4cae26fc754ae284bcc81dcb2a7d50e17d4fa57`.
+
+The released library passed the four-rank value-checked collective gate and
+was mapped into every live GLM-5.3-Flash TP4 rank for a matched full RigMark
+regression. Both RigMark arms passed 15/15 outputs; single-stream decode and
+64k prefill were within 2%, with mixed concurrency movement inside overlapping
+sample ranges. This hardened implementation is the sole recommended four-node
+build because its compatibility and fail-closed configuration checks have no
+material measured cost. See
 [`docs/qualification.md`](docs/qualification.md).
 
 The implemented and deferred items are recorded in

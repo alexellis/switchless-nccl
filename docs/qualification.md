@@ -64,9 +64,13 @@ samples, three concurrency samples, and seed for each arm.
 Both receipts passed 15/15 output gates. Their SHA-256 identities are:
 
 - standalone combined:
-  `5450f6179cb6442ed7fbf935942a9a6ccebd4d8e4c5382299746287ffee96843`;
+  `f518209fd60e767d9c120ba071aace2a758bca0dc4876b855177aa8d90513d3d`;
 - legacy-hardened:
-  `b30376bcbc8dcd2e5955fe004ab601abfc5c415874e24642b1cca93545a3c9cf`.
+  `48d69adca14e76dabc073c7c72e7600f77a43ae5ffd3f213c12de6cad3b82956`.
+
+The publishable copies live in the GLM TP4 recipe's `data/rigmark` directory.
+Only site-specific hostnames in metadata were normalised to rank labels;
+generated outputs, request settings, and timing samples are unchanged.
 
 The observed differences are small, mixed in direction, and inside the sample
 ranges. There is no evidence of a material performance regression from the

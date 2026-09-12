@@ -16,6 +16,22 @@ It applies:
 This is the known-working production library. It remains deployed until the
 new standalone build passes the same four-rank gate.
 
+The `legacy-two-patch` branch makes these exact inputs reproducible without
+mixing them with later modifications.
+
+## Hardened legacy-derived candidate
+
+The `legacy-hardened` branch layers one marked project patch over the exact
+legacy inputs. It recognises the new parameter and the parsed legacy alias,
+preserves stock listener behaviour outside switchless mode, rejects NIC
+merging, and requires exactly two valid, distinct listener GIDs.
+
+This candidate passed the live four-rank collective gate and matched full-model
+A/B on 12 September 2026. The standalone and hardened RigMark receipts both
+passed 15/15 outputs, with all headline differences between -3% and +3%.
+`legacy-hardened` is the recommended four-node variant; the evidence and
+rationale are in [`qualification.md`](qualification.md).
+
 ## Public v0.1.0 legacy build
 
 The release in `alexellis/glm-5.3-flash-4x-dgx-spark-switchless` has library

@@ -17,17 +17,20 @@ if command -v shellcheck >/dev/null; then
   shellcheck -x -P "$ROOT/scripts" "${scripts_to_lint[@]}"
 fi
 
-python3 - "$ROOT/scripts/verify-loaded.py" <<'PY'
+python3 - "$ROOT/scripts/verify-loaded.py" "$ROOT/scripts/collective-smoke.py" <<'PY'
 from pathlib import Path
 import sys
 
-source = Path(sys.argv[1]).read_text(encoding="utf-8")
-compile(source, sys.argv[1], "exec")
+for filename in sys.argv[1:]:
+    source = Path(filename).read_text(encoding="utf-8")
+    compile(source, filename, "exec")
 PY
 
 echo "$NCCL_SKIP_PATCH_SHA256  $ROOT/patches/nccl-2.30.7-skip-tree-pat.patch" |
   sha256sum --check --status -
 echo "$NCCL_GID_PATCH_SHA256  $ROOT/patches/nccl-2.30.7-advertise-all-listener-gids.patch" |
+  sha256sum --check --status -
+echo "$NCCL_HARDENING_PATCH_SHA256  $ROOT/patches/nccl-2.30.7-hardened-switchless.patch" |
   sha256sum --check --status -
 
 rendered=$("$ROOT/scripts/render-netplan.sh" "$ROOT/examples/fabric.env")
@@ -50,7 +53,8 @@ git -C "$CHECK_DIR/nccl" checkout --quiet "$NCCL_COMMIT"
 test "$(git -C "$CHECK_DIR/nccl" write-tree)" = "$NCCL_BASE_TREE"
 for patch in \
   "$ROOT/patches/nccl-2.30.7-skip-tree-pat.patch" \
-  "$ROOT/patches/nccl-2.30.7-advertise-all-listener-gids.patch"; do
+  "$ROOT/patches/nccl-2.30.7-advertise-all-listener-gids.patch" \
+  "$ROOT/patches/nccl-2.30.7-hardened-switchless.patch"; do
   git -C "$CHECK_DIR/nccl" apply --check "$patch"
   git -C "$CHECK_DIR/nccl" apply --index "$patch"
 done

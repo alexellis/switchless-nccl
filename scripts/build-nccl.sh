@@ -10,6 +10,7 @@ OUTPUT_DIR=${1:-$PWD/nccl-patched}
 PATCHES=(
   "$ROOT/patches/nccl-2.30.7-skip-tree-pat.patch"
   "$ROOT/patches/nccl-2.30.7-advertise-all-listener-gids.patch"
+  "$ROOT/patches/nccl-2.30.7-hardened-switchless.patch"
 )
 
 case "$(uname -m)" in
@@ -30,6 +31,7 @@ done
 
 echo "$NCCL_SKIP_PATCH_SHA256  ${PATCHES[0]}" | sha256sum --check --status -
 echo "$NCCL_GID_PATCH_SHA256  ${PATCHES[1]}" | sha256sum --check --status -
+echo "$NCCL_HARDENING_PATCH_SHA256  ${PATCHES[2]}" | sha256sum --check --status -
 
 BUILD_DIR=$(mktemp -d)
 cleanup() {

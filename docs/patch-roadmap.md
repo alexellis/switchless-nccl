@@ -1,20 +1,20 @@
 # Patch improvement roadmap
 
-The first standalone build intentionally preserves SparkRing's independently
-implemented combined patch byte-for-byte. That gives the migration one change
-at a time: provenance and packaging first, patch semantics only after a direct
-comparison with the known-working legacy library.
+The `legacy-two-patch` branch preserves SparkRing's two known-working files
+byte-for-byte. This branch adds a separately identified hardening patch.
 
-The following changes have clear correctness value for a subsequent patchset.
+The following changes have clear correctness value. Their state is explicit so
+that a successful transport test is not overstated.
 
-## Make ring-only an algorithm constraint
+## Make ring-only an algorithm constraint — partially implemented
 
 The current patch returns success from the Tree and PAT transport-connect
 functions without creating those connections. This works when the deployment
 also forces `NCCL_ALGO=Ring`, but it leaves NCCL's internal algorithm matrix
 claiming that unsupported algorithms exist.
 
-A stronger implementation should:
+The launch wrapper rejects a conflicting `NCCL_ALGO` and exports `Ring` before
+the process starts. The deeper internal changes remain deferred:
 
 1. restrict the effective algorithm matrix to Ring in the graph/tuning path;
 2. skip eager Tree/PAT setup at its caller when ring-only mode is active;
@@ -25,12 +25,10 @@ A stronger implementation should:
 This removes synthetic success and makes an invalid configuration fail during
 initialisation with a precise diagnostic.
 
-## Bound listener-GID advertisement
+## Bound listener-GID advertisement — implemented
 
-The current listener change is enabled by subnet-aware routing, not explicitly
-by ring-only mode, and fills two handle slots by walking eligible devices. A
-stronger implementation should preserve stock behaviour outside ring-only mode
-and, inside it:
+The hardening patch preserves stock behaviour outside ring-only mode and,
+inside it:
 
 - require exactly two selected, active RoCE devices;
 - require `NCCL_IB_MERGE_NICS=0`;
@@ -39,9 +37,8 @@ and, inside it:
   and
 - log the device, index, GID, and switchless patchset identity.
 
-An embedded listener-patch marker would also let binary verification prove that
-both halves of the combined patch were compiled, rather than relying only on
-the source-tree receipt.
+The `SWITCHLESS/HARDENED` strings let binary verification prove that both the
+transport skip and listener validation were compiled.
 
 ## Validate the external contract
 

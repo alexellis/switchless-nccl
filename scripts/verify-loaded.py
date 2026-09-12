@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Fail unless a process maps exactly the expected NCCL library."""
+"""Prove the expected NCCL library wins process-global resolution."""
 
 import argparse
+import ctypes
 import os
 from pathlib import Path
 
@@ -17,6 +18,30 @@ def nccl_mappings(pid: int) -> set[Path]:
         if candidate.startswith("/") and "libnccl.so" in Path(candidate).name:
             result.add(Path(candidate).resolve())
     return result
+
+
+class DlInfo(ctypes.Structure):
+    """glibc dladdr result for an in-process NCCL symbol."""
+
+    _fields_ = [
+        ("dli_fname", ctypes.c_char_p),
+        ("dli_fbase", ctypes.c_void_p),
+        ("dli_sname", ctypes.c_char_p),
+        ("dli_saddr", ctypes.c_void_p),
+    ]
+
+
+def resolved_nccl() -> Path:
+    process = ctypes.CDLL(None)
+    symbol = process.ncclGetVersion
+    info = DlInfo()
+    libdl = ctypes.CDLL("libdl.so.2")
+    libdl.dladdr.argtypes = [ctypes.c_void_p, ctypes.POINTER(DlInfo)]
+    libdl.dladdr.restype = ctypes.c_int
+    address = ctypes.cast(symbol, ctypes.c_void_p)
+    if libdl.dladdr(address, ctypes.byref(info)) == 0 or not info.dli_fname:
+        raise RuntimeError("could not resolve process-global ncclGetVersion")
+    return Path(info.dli_fname.decode()).resolve()
 
 
 def main() -> int:
@@ -37,13 +62,27 @@ def main() -> int:
         __import__("torch")
 
     mappings = nccl_mappings(args.pid)
-    if mappings != {expected}:
+    if expected not in mappings:
         formatted = ", ".join(str(path) for path in sorted(mappings)) or "none"
         raise SystemExit(
-            f"expected exactly {expected} in PID {args.pid}; mapped NCCL: {formatted}"
+            f"expected {expected} in PID {args.pid}; mapped NCCL: {formatted}"
         )
 
-    print(f"PID {args.pid} maps exactly {expected}")
+    if args.pid == os.getpid():
+        resolved = resolved_nccl()
+        if resolved != expected:
+            raise SystemExit(
+                f"process-global NCCL resolves to {resolved}; expected {expected}"
+            )
+        print(f"PID {args.pid} resolves process-global NCCL to {expected}")
+    elif mappings != {expected}:
+        formatted = ", ".join(str(path) for path in sorted(mappings))
+        raise SystemExit(
+            "external PID verification cannot resolve symbols and therefore "
+            f"requires one NCCL mapping; found: {formatted}"
+        )
+    else:
+        print(f"PID {args.pid} maps exactly {expected}")
     return 0
 
 

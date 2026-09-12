@@ -34,6 +34,29 @@ They are byte-for-byte identical to the two files retained in
 `libnccl.so.2.30.7` has SHA-256
 `ccd57342449c3f680befcb379329b935746e5299dc4de5f2516146e0411bd85f`.
 
+## Hardening patch
+
+- file: `patches/nccl-2.30.7-hardened-switchless.patch`
+- SHA-256: `e2dd39eaefc022f99d5a3d3195e81947da20a4c7acbf1d688b4df8f6691c210c`
+- final patched Git tree: `560ba01b9becbc7d3daa1677f0216503fc3be631`
+- ownership: switchless-nccl project modification, Apache-2.0
+
+The modification is visibly marked in both affected NVIDIA source files. It:
+
+1. replaces raw `getenv` presence checks with cached NCCL integer parameters;
+2. retains `NCCL_SKIP_TREE_CONNECT` as a parsed compatibility alias;
+3. makes the broader listener advertisement conditional on explicit
+   switchless mode, preserving upstream behaviour otherwise;
+4. rejects NIC merging in switchless mode;
+5. requires exactly two distinct, valid listener GIDs instead of silently
+   truncating the device walk; and
+6. logs an unambiguous patch identity plus device, port, GID index, and value.
+
+Ring-only algorithm enforcement remains in `scripts/switchless-nccl-run`.
+Changing NCCL's internal tuning matrix is deliberately deferred until it can
+be tested independently; returning synthetic success from Tree and PAT remains
+an acknowledged limitation of this candidate.
+
 The listener change extends NVIDIA's DGX Spark subnet-aware routing work in
 commit `5c1c4288e6627e9b442eda997aa6ee9136cda0bd`, authored by Zifu Yang and
 signed off by Xiaofan Li. The patch retains the surrounding NVIDIA source and

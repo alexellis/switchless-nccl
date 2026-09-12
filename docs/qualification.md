@@ -1,15 +1,16 @@
 # Four-Spark qualification
 
-The `legacy-hardened` candidate was qualified on 12 September 2026 against
-the standalone combined patch from `master`. The result is a practical
-performance tie, with stronger configuration safety in the hardened variant.
+The hardened implementation now published on `master` was qualified on
+12 September 2026 against a retired standalone combined candidate. The result
+is a practical performance tie, with stronger configuration safety in the
+hardened implementation.
 
 ## Candidates
 
 | Variant | NCCL library SHA-256 | Source relationship |
 |---|---|---|
-| Standalone combined | `49adf0bd8a1b18287f28fc97e13c948834cbb51829e0c886d2902e8aea93a538` | Later SparkRing combined patch published on `master` |
-| Legacy-hardened | `34b2d81f528abae15b60fc1ea6a20da4aace7ec45c2dca1c3e93dc0fc06b4da6` | Exact proven two-patch inputs plus the marked project hardening patch |
+| Retired standalone combined | `49adf0bd8a1b18287f28fc97e13c948834cbb51829e0c886d2902e8aea93a538` | Later SparkRing combined patch used only as a qualification control |
+| Canonical hardened | `34b2d81f528abae15b60fc1ea6a20da4aace7ec45c2dca1c3e93dc0fc06b4da6` | Exact proven two-patch inputs plus the marked OpenFaaS Ltd hardening patch |
 
 The retained live legacy library, SHA-256
 `ccd57342449c3f680befcb379329b935746e5299dc4de5f2516146e0411bd85f`,
@@ -30,9 +31,9 @@ It then:
 - captured and replayed CUDA-graph all-reduce; and
 - cleanly destroyed the communicator on all four ranks.
 
-The retained legacy, standalone combined, and legacy-hardened variants all
-passed. Single-operation transport timings are diagnostic only and are not
-used for the performance verdict.
+The retained historical build, retired combined candidate, and canonical
+hardened implementation all passed. Single-operation transport timings are
+diagnostic only and are not used for the performance verdict.
 
 ## Matched full-model A/B
 
@@ -52,7 +53,7 @@ RigMark revision `d8353e93b274e8d880ab14a5df2a55c87d7bee16`, protocol
 1.0.0, ran the same prompts, request body, five decode samples, three prefill
 samples, three concurrency samples, and seed for each arm.
 
-| Metric | Standalone combined | Legacy-hardened | Hardened / standalone |
+| Metric | Retired combined | Canonical hardened | Hardened / combined |
 |---|---:|---:|---:|
 | Code decode | 72.6 tok/s | 71.0 tok/s | 0.98× |
 | Prose decode | 30.8 tok/s | 30.6 tok/s | 0.99× |
@@ -63,9 +64,9 @@ samples, three concurrency samples, and seed for each arm.
 
 Both receipts passed 15/15 output gates. Their SHA-256 identities are:
 
-- standalone combined:
+- retired standalone combined:
   `f518209fd60e767d9c120ba071aace2a758bca0dc4876b855177aa8d90513d3d`;
-- legacy-hardened:
+- canonical hardened:
   `48d69adca14e76dabc073c7c72e7600f77a43ae5ffd3f213c12de6cad3b82956`.
 
 The publishable copies live in the GLM TP4 recipe's `data/rigmark` directory.
@@ -78,8 +79,9 @@ hardening layer.
 
 ## Recommendation
 
-Use `legacy-hardened` for the four-node switchless cycle. It keeps the exact
-source lineage already proven by the live deployment and adds:
+Use the canonical hardened implementation on `master` for the four-node
+switchless cycle. It keeps the exact source lineage already proven by the live
+deployment and adds:
 
 - parsed zero/one semantics instead of raw environment-variable presence;
 - the new `NCCL_SWITCHLESS_RING_ONLY` name plus the legacy
@@ -89,6 +91,7 @@ source lineage already proven by the live deployment and adds:
 - an exact two-distinct-GID contract instead of silent truncation; and
 - unmistakable `SWITCHLESS/HARDENED` runtime diagnostics.
 
-The standalone combined patch remains a valid, tested comparison branch. It
-does not offer a measured performance advantage large enough to outweigh the
-hardened variant's compatibility and fail-closed checks.
+The retired standalone combined patch remains in the immutable qualification
+receipt only. It does not offer a measured performance advantage large enough
+to outweigh the canonical implementation's compatibility and fail-closed
+checks.

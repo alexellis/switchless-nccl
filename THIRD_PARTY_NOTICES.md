@@ -15,8 +15,8 @@ not vendored in this Git repository. A release bundle includes the upstream
 
 The lines added by the two patch files under `patches/` were first published by
 SparkRing under Apache-2.0 at the revision recorded in `PROVENANCE.md`.
-The additional hardening patch is a marked modification of those files and is
-distributed under this project's Apache-2.0 licence.
+The additional hardening patch is a marked modification owned by Alex Ellis,
+OpenFaaS Ltd, and distributed under this project's Apache-2.0 licence.
 
 ## Joseph Rose's prior work
 

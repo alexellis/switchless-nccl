@@ -4,7 +4,7 @@ Build, install, and verify a source-pinned NCCL library for a direct-cable
 RoCE cycle of NVIDIA DGX Spark systems.
 
 Stock NCCL attempts Tree and PAT transport connections between ranks that are
-not directly cabled in a four-node switchless cycle. This branch layers a
+not directly cabled in a four-node switchless cycle. This repository layers a
 separately identified hardening patch over the exact two Apache-2.0 SparkRing
 files used by Alex Ellis's known-working four-Spark library.
 
@@ -20,22 +20,17 @@ forced to Ring. Use stock NCCL for a switched fabric or a two-node direct pair.
 
 ## Quick start
 
-After this hardened build is qualified and released, download its bundle
-on every Spark, verify its checksum, and extract it to the same host path:
+Download, verify, and install a pinned release on every Spark:
 
 ```bash
-tar -xzf nccl-2.30.7-switchless-hardened-sm121-linux-arm64.tar.gz
-install -d "$HOME/nccl-switchless"
-cp -a nccl-2.30.7-switchless-hardened-sm121-linux-arm64/. \
-  "$HOME/nccl-switchless/"
-(cd "$HOME/nccl-switchless" && sha256sum --check SHA256SUMS)
+./scripts/install-release.sh v0.0.1 "$HOME/nccl-switchless-v0.0.1"
 ```
 
 For a host process, use the wrapper so PyTorch and vLLM agree on the library:
 
 ```bash
 ./scripts/switchless-nccl-run \
-  "$HOME/nccl-switchless/libnccl.so.2" -- vllm serve ...
+  "$HOME/nccl-switchless-v0.0.1/libnccl.so.2" -- vllm serve ...
 ```
 
 For a container, mount the directory read-only at the same path on every rank
@@ -58,10 +53,9 @@ Build it on an ARM64 Linux host with Docker:
 ./scripts/package-nccl.sh ./nccl-patched ./bin
 ```
 
-The host does not need a GPU. CI uses an ARM64 runner and publishes checksummed
-release archives when a repository release/tag is created. No standalone
-release has been cut yet; the current production library stays pinned during
-qualification.
+The host does not need a GPU. Every successful ARM64 CI run uploads the
+checksummed bundle as an Actions artifact. A repository release/tag publishes
+the same archive and checksum as durable release assets.
 
 ## Fabric configuration
 
@@ -105,17 +99,19 @@ loading contract, fabric bootstrap, and transport-level verification.
 
 ## Status
 
-This branch passed the four-rank value-checked collective gate and a matched
-full-model A/B against the standalone combined patch. Both RigMark arms passed
-15/15 outputs and were a practical performance tie. `legacy-hardened` is the
-recommended four-node variant because its compatibility and fail-closed
-configuration checks have no material measured cost. See
+The implementation on `master` passed the four-rank value-checked collective
+gate and a matched full-model A/B against the retired standalone combined
+candidate. Both RigMark arms passed 15/15 outputs and were a practical
+performance tie. This hardened implementation is the sole recommended
+four-node build because its compatibility and fail-closed configuration checks
+have no material measured cost. See
 [`docs/qualification.md`](docs/qualification.md).
-
-The exact-source baseline remains on `legacy-two-patch`.
 
 The implemented and deferred items are recorded in
 [`docs/patch-roadmap.md`](docs/patch-roadmap.md).
+The sole implementation and migration contract are summarised in
+[`docs/implementation.md`](docs/implementation.md).
 
-Licensed under Apache-2.0. See [`NOTICE`](NOTICE) and
+Original project work is Copyright 2026 Alex Ellis, OpenFaaS Ltd, and licensed
+under Apache-2.0. See [`NOTICE`](NOTICE) and
 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).

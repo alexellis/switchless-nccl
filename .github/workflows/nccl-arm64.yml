@@ -8,6 +8,7 @@ on:
       - patches/**
       - scripts/build-nccl.sh
       - scripts/package-nccl.sh
+      - scripts/install-release.sh
       - scripts/verify-nccl.sh
       - scripts/versions.sh
       - PROVENANCE.md
@@ -21,6 +22,7 @@ on:
       - patches/**
       - scripts/build-nccl.sh
       - scripts/package-nccl.sh
+      - scripts/install-release.sh
       - scripts/verify-nccl.sh
       - scripts/versions.sh
       - PROVENANCE.md
@@ -53,3 +55,12 @@ jobs:
         run: ./scripts/verify-nccl.sh "$RUNNER_TEMP/nccl-patched"
       - name: Build the release bundle
         run: ./scripts/package-nccl.sh "$RUNNER_TEMP/nccl-patched" "$RUNNER_TEMP/release"
+      - name: Upload the checksummed bundle
+        uses: actions/upload-artifact@v7
+        with:
+          name: switchless-nccl-${{ github.sha }}-linux-arm64
+          path: |
+            ${{ runner.temp }}/release/*.tar.gz
+            ${{ runner.temp }}/release/*.sha256
+          if-no-files-found: error
+          retention-days: 30

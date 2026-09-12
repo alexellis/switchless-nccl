@@ -1,7 +1,8 @@
 # Patch improvement roadmap
 
-The `legacy-two-patch` branch preserves SparkRing's two known-working files
-byte-for-byte. This branch adds a separately identified hardening patch.
+The first two files under `patches/` preserve SparkRing's known-working inputs
+byte-for-byte. The third file is a separately identified OpenFaaS Ltd hardening
+patch. Together they form the sole implementation published from `master`.
 
 The following changes have clear correctness value. Their state is explicit so
 that a successful transport test is not overstated.

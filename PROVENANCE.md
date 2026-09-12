@@ -9,7 +9,7 @@
 - licence: Apache-2.0 and BSD-3-Clause; retain NVIDIA's `LICENSE.txt` and
   `ThirdPartyNotices.txt` when distributing a binary
 
-## Legacy two-patch source
+## Proven two-patch source
 
 - files:
   - `patches/nccl-2.30.7-skip-tree-pat.patch`
@@ -34,12 +34,12 @@ They are byte-for-byte identical to the two files retained in
 `libnccl.so.2.30.7` has SHA-256
 `ccd57342449c3f680befcb379329b935746e5299dc4de5f2516146e0411bd85f`.
 
-## Hardening patch
+## OpenFaaS Ltd hardening patch
 
 - file: `patches/nccl-2.30.7-hardened-switchless.patch`
 - SHA-256: `e2dd39eaefc022f99d5a3d3195e81947da20a4c7acbf1d688b4df8f6691c210c`
 - final patched Git tree: `560ba01b9becbc7d3daa1677f0216503fc3be631`
-- ownership: switchless-nccl project modification, Apache-2.0
+- ownership: Alex Ellis, OpenFaaS Ltd, Apache-2.0
 
 The modification is visibly marked in both affected NVIDIA source files. It:
 

@@ -6,6 +6,14 @@ on:
       - master
     paths:
       - patches/**
+      - profiles/dual-pf.json
+      - examples/dual-pf.json
+      - scripts/render-dual-pf-env.py
+      - scripts/build-dual-pf-ci.sh
+      - scripts/package-dual-pf.py
+      - scripts/prepare_dual_pf.py
+      - scripts/check.sh
+      - tests/**
       - scripts/build-nccl.sh
       - scripts/package-nccl.sh
       - scripts/install-release.sh
@@ -20,6 +28,14 @@ on:
   pull_request:
     paths:
       - patches/**
+      - profiles/dual-pf.json
+      - examples/dual-pf.json
+      - scripts/render-dual-pf-env.py
+      - scripts/build-dual-pf-ci.sh
+      - scripts/package-dual-pf.py
+      - scripts/prepare_dual_pf.py
+      - scripts/check.sh
+      - tests/**
       - scripts/build-nccl.sh
       - scripts/package-nccl.sh
       - scripts/install-release.sh
@@ -63,4 +79,35 @@ jobs:
             ${{ runner.temp }}/release/*.tar.gz
             ${{ runner.temp }}/release/*.sha256
           if-no-files-found: error
+          retention-days: 30
+
+  four-pf:
+    name: Four-PF candidate (compile only)
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+      - name: Validate source pins and four-PF CPU contracts
+        run: ./scripts/check.sh
+      - name: Compile the opt-in four-PF library (no GPU)
+        run: ./scripts/build-dual-pf-ci.sh "$RUNNER_TEMP/dual-pf"
+      - name: Package the checksummed four-PF release asset
+        run: python3 ./scripts/package-dual-pf.py package "$RUNNER_TEMP/dual-pf" "$RUNNER_TEMP/dual-pf-release"
+      - name: Retain candidate and failure evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: dual-pf-arm64-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/dual-pf/*.json
+            ${{ runner.temp }}/dual-pf/*.log
+            ${{ runner.temp }}/dual-pf/*.txt
+            ${{ runner.temp }}/dual-pf/licenses/
+            ${{ runner.temp }}/dual-pf/source/build/lib/libnccl.so.2.30.7
+            ${{ runner.temp }}/dual-pf-release/*.tar.gz
+            ${{ runner.temp }}/dual-pf-release/*.sha256
+            ${{ runner.temp }}/dual-pf-upstream.log
+            ${{ runner.temp }}/dual-pf-prepare.log
+            ${{ runner.temp }}/dual-pf-exit.txt
+          if-no-files-found: warn
           retention-days: 30

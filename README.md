@@ -23,8 +23,11 @@ forced to Ring. Use stock NCCL for a switched fabric or a two-node direct pair.
 Download, verify, and install a pinned release on every Spark:
 
 ```bash
-./scripts/install-release.sh v0.0.1 "$HOME/nccl-switchless-v0.0.1"
+./scripts/install-release.sh --profile two-pf v0.0.1 "$HOME/nccl-switchless-v0.0.1"
 ```
+
+v0.0.1 has no four-PF archive. With this installer, a default install of that tag
+fails; use `--profile two-pf` as shown above.
 
 For a host process, use the wrapper so PyTorch and vLLM agree on the library:
 
@@ -53,9 +56,10 @@ Build it on an ARM64 Linux host with Docker:
 ./scripts/package-nccl.sh ./nccl-patched ./bin
 ```
 
-The host does not need a GPU. Every successful ARM64 CI run uploads the
-checksummed bundle as an Actions artifact. A repository release/tag publishes
-the same archive and checksum as durable release assets.
+The host does not need a GPU. ARM64 CI uploads checksummed bundles as Actions artifacts.
+The existing tag-triggered publish workflow builds both profiles and publishes two distinct archives with checksums.
+If either profile fails, the workflow does not upload release assets.
+The default installer selects the four-PF archive. `--profile two-pf` selects the two-PF archive.
 
 ## Fabric configuration
 
@@ -128,9 +132,8 @@ The released library passed the four-rank value-checked collective gate and
 was mapped into every live GLM-5.3-Flash TP4 rank for a matched full RigMark
 regression. Both RigMark arms passed 15/15 outputs; single-stream decode and
 64k prefill were within 2%, with mixed concurrency movement inside overlapping
-sample ranges. This hardened implementation is the sole recommended four-node
-build because its compatibility and fail-closed configuration checks have no
-material measured cost. See
+sample ranges. This two-PF release is the build covered by that serving check. The four-PF
+profile below is the installer default; its runtime qualification is still open. See
 [`docs/qualification.md`](docs/qualification.md).
 
 The implemented and deferred items are recorded in
@@ -141,3 +144,24 @@ The sole implementation and migration contract are summarised in
 Original project work is Copyright 2026 Alex Ellis, OpenFaaS Ltd, and licensed
 under Apache-2.0. See [`NOTICE`](NOTICE) and
 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+
+## Four-PF (dual PCI-root) profile
+
+For a cycle where each Spark reaches each neighbour through two PCIe-root
+functions (four RoCE PFs per node), a source profile adds four-GID
+listener advertisement, PCI-root-preserving routing and strict listener
+admission. It is the installer default and takes effect only with its library and environment.
+The four-PF release archive has a separate name from the two-device archive.
+To install the two-PF archive instead, pass `--profile two-pf`.
+
+```bash
+./scripts/install-release.sh --repository othexmr/switchless-nccl \
+  vX.Y.Z "$HOME/nccl-switchless-four-pf-vX.Y.Z"
+```
+
+Replace `vX.Y.Z` with a tag that includes the four-PF archive.
+Omit `--repository` for releases from `alexellis/switchless-nccl`.
+The archive includes configuration examples, all four patches, licenses, and source and build receipts.
+The receipts identify a compiled library. They do not establish serving qualification.
+See
+[docs/dual-pf.md](docs/dual-pf.md).

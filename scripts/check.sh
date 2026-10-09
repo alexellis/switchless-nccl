@@ -17,7 +17,7 @@ if command -v shellcheck >/dev/null; then
   shellcheck -x -P "$ROOT/scripts" "${scripts_to_lint[@]}"
 fi
 
-python3 - "$ROOT/scripts/verify-loaded.py" "$ROOT/scripts/collective-smoke.py" <<'PY'
+python3 - "$ROOT/scripts/verify-loaded.py" "$ROOT/scripts/collective-smoke.py" "$ROOT/scripts/package-dual-pf.py" <<'PY'
 from pathlib import Path
 import sys
 
@@ -60,4 +60,8 @@ for patch in \
 done
 test "$(git -C "$CHECK_DIR/nccl" write-tree)" = "$NCCL_PATCHED_TREE"
 
-echo "source pins, patch, scripts, and Netplan template passed"
+# The four-PF option has its own immutable source tree and CPU listener gates.
+NCCL_SOURCE="$CHECK_DIR/nccl" python3 -B -m unittest discover \
+  -s "$ROOT/tests" -p 'test_*.py' -v
+
+echo "source pins, patch, scripts, Netplan template, and dual-PF CPU gates passed"

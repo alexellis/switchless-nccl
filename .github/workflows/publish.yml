@@ -11,7 +11,7 @@ permissions:
 jobs:
   publish:
     runs-on: actuated-arm64-8cpu-12gb
-    timeout-minutes: 90
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v7
         with:
@@ -29,6 +29,27 @@ jobs:
         run: ./scripts/verify-nccl.sh "$RUNNER_TEMP/nccl-patched"
       - name: Package NCCL with provenance
         run: ./scripts/package-nccl.sh "$RUNNER_TEMP/nccl-patched" ./bin
+      - name: Validate both source profiles
+        run: ./scripts/check.sh
+      - name: Build the four-PF library from its pinned source
+        run: ./scripts/build-dual-pf-ci.sh "$RUNNER_TEMP/dual-pf"
+      - name: Package four-PF NCCL with its build receipts
+        run: python3 ./scripts/package-dual-pf.py package "$RUNNER_TEMP/dual-pf" ./bin
+      - name: Retain four-PF build and failure evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: dual-pf-publish-evidence-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/dual-pf/*.json
+            ${{ runner.temp }}/dual-pf/*.log
+            ${{ runner.temp }}/dual-pf/*.txt
+            ${{ runner.temp }}/dual-pf/licenses/
+            ${{ runner.temp }}/dual-pf-upstream.log
+            ${{ runner.temp }}/dual-pf-prepare.log
+            ${{ runner.temp }}/dual-pf-exit.txt
+          if-no-files-found: warn
+          retention-days: 30
       - name: Upload release assets
         uses: alexellis/upload-assets@0.5.0
         env:

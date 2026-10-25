@@ -3,6 +3,13 @@
 Build, install, and verify a source-pinned NCCL library for a direct-cable
 RoCE cycle of NVIDIA DGX Spark systems.
 
+**AI-assisted workflow:** This repository was built and tested with Codex. It is
+designed to be driven by a capable AI coding agent, rather than followed as a
+universal step-by-step manual. Give the agent the full checkout, ask it to read
+this README and any `AGENTS.md`, adapt the commands to your environment, run the
+checks, and investigate errors from their output. Review machine-specific
+changes before applying them.
+
 Stock NCCL attempts Tree and PAT transport connections between ranks that are
 not directly cabled in a four-node switchless cycle. This repository layers a
 separately identified hardening patch over the exact two Apache-2.0 SparkRing

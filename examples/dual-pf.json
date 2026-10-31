@@ -1,0 +1,6 @@
+{
+  "hcas": ["<first-PF>", "<second-PF>", "<third-PF>", "<fourth-PF>"],
+  "fabric_cidr": "<IPv4-CIDR-covering-the-fabric>",
+  "fabric_addresses": ["<first-PF-IPv4>", "<second-PF-IPv4>", "<third-PF-IPv4>", "<fourth-PF-IPv4>"],
+  "socket_ifname": "<management-interface>"
+}
